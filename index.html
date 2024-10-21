@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cálculo de Parcelamento</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 20px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #00A099;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #009A8D;
+        }
+
+        .resultado {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+
+        .resultado p {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Cálculo de Parcelamento</h1>
+        
+        <label for="valor-pacote">Valor do Pacote <b>A prazo<b/> (R$):</label>
+        <input type="number" id="valor-pacote" value="10699" min="1" step="0.01">
+
+        <label for="entrada">Entrada (R$):</label>
+        <input type="number" id="entrada" value="3000" min="1" step="0.01">
+
+        <label for="produtos-avulsos">Valor de Produtos Avulsos (R$):</label>
+        <input type="number" id="produtos-avulsos" value="0" min="0" step="0.01">
+
+        <label for="parcelas">Quantidade de Parcelas:</label>
+        <select id="parcelas">
+            <option value="1">1x</option>
+            <option value="2">2x</option>
+            <option value="3">3x</option>
+            <option value="4">4x</option>
+            <option value="5">5x</option>
+            <option value="6">6x</option>
+            <option value="7">7x</option>
+            <option value="8">8x</option>
+            <option value="9">9x</option>
+            <option value="10">10x</option>
+            <option value="11">11x</option>
+            <option value="12">12x</option>
+            <option value="13">13x</option>
+            <option value="14">14x</option>
+            <option value="15">15x</option>
+            <option value="16">16x</option>
+            <option value="17">17x</option>
+            <option value="18">18x</option>
+            <option value="19">19x</option>
+            <option value="20">20x</option>
+            <option value="21">21x</option>
+        </select>
+
+        <label for="forma-pagamento">Forma de Pagamento:</label>
+        <select id="forma-pagamento">
+            <option value="credito">Cartão de Crédito</option>
+            <option value="boleto">Boleto</option>
+            <option value="recorrente">Pagamento Recorrente</option>
+        </select>
+
+        <button onclick="calcularParcelas()">Calcular Parcelas</button>
+
+        <div id="resultado" class="resultado" style="display:none;">
+            <p><strong>Valor Total com Juros: </strong><span id="valor-total"></span></p>
+            <p><strong>Valor da Parcela: </strong><span id="valor-parcela"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function calcularParcelas() {
+            const valorPacote = parseFloat(document.getElementById('valor-pacote').value);
+            const entrada = parseFloat(document.getElementById('entrada').value);
+            const produtosAvulsos = parseFloat(document.getElementById('produtos-avulsos').value);
+            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const formaPagamento = document.getElementById('forma-pagamento').value;
+
+            let taxaJuros = 0; // Inicializa a taxa de juros
+            if (formaPagamento === 'credito' && parcelas >= 7) {
+                taxaJuros = 0.008; // 0.8% para cartão de crédito
+            } else if (formaPagamento === 'boleto') {
+                taxaJuros = 0.01; // 1% para boleto
+            } else if (formaPagamento === 'recorrente') {
+                taxaJuros = 0.009; // 0.9%  para pagamento recorrente
+            }
+
+            // Soma o valor do pacote com os produtos avulsos
+            let valorTotal = valorPacote + produtosAvulsos;
+            if (parcelas >= 7) {
+                valorTotal *= Math.pow((1 + taxaJuros), parcelas);
+            }
+
+            const valorParcelado = valorTotal - entrada;
+            const valorParcela = valorParcelado / parcelas;
+
+            document.getElementById('valor-total').textContent = `R$ ${valorTotal.toFixed(2)}`;
+            document.getElementById('valor-parcela').textContent = `R$ ${valorParcela.toFixed(2)}`;
+
+            document.getElementById('resultado').style.display = 'block';
+        }
+    </script>
+
+</body>
+</html>

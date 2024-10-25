@@ -6,47 +6,68 @@
     <title>Cálculo de Parcelamento</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             background-color: #f4f4f9;
             color: #333;
             display: flex;
             justify-content: center;
+            margin: 0px;
             align-items: center;
             height: 100vh;
-            margin: 0;
         }
 
         .container {
             background-color: white;
             border-radius: 8px;
-            padding: 30px;
+            padding: 25px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 400px;
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+
+        }
+
+        .unidade-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+           
+        }
+
+        .unidade-container select {
+            margin: 0px 10px 0 10px;
+            width: 100%;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            font-size: 13px;
+          
         }
 
         h1 {
-            text-align: center;
-            margin-bottom: 20px;
+            text-align: start;
+            margin: 5px  0 10px 0;
+            font-size: 25px;
         }
 
         label {
             font-size: 14px;
             margin-top: 10px;
         }
-
         input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0 20px;
+           
+            padding: 8px;
             border-radius: 5px;
             border: 1px solid #ddd;
-            font-size: 14px;
+            font-size: 13px;
+            margin-top: 4px;
         }
-
         button {
             background-color: #00A099;
             color: white;
             padding: 10px 15px;
+            margin-top: 10px;
             border: none;
             border-radius: 5px;
             font-size: 16px;
@@ -65,23 +86,38 @@
             border-radius: 5px;
             border: 1px solid #ddd;
             text-align: center;
+            
         }
 
         .resultado p {
             margin: 5px 0;
             font-size: 16px;
         }
+
+
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Cálculo de Parcelamento</h1>
-        
-        <label for="valor-pacote">Valor do Pacote <b>A prazo<b/> (R$):</label>
-        <input type="number" id="valor-pacote" value="10699" min="1" step="0.01">
 
-        <label for="entrada">Entrada (R$):</label>
+
+    <div class="container">
+        <div class="unidade-container">
+            <img src="./L06.png" width="250" alt="">
+            <select id="unidade" onchange="atualizarPacotes()">
+                <option value="sao-paulo">São Paulo</option>
+                <option value="rio-de-janeiro">Rio de Janeiro</option>
+                <option value="curitiba">Curitiba</option>
+            </select>
+        </div>
+        <h1>Cálculo de Parcelamento</h1>
+
+        <label for="pacote">Escolha um Pacote:</label>
+        <select id="pacote" onchange="atualizarValorPacote()">
+            <!-- As opções serão preenchidas dinamicamente -->
+        </select>
+
+        <label for="entrada">Valor de Entrada (R$):</label>
         <input type="number" id="entrada" value="3000" min="1" step="0.01">
 
         <label for="produtos-avulsos">Valor de Produtos Avulsos (R$):</label>
@@ -89,31 +125,11 @@
 
         <label for="parcelas">Quantidade de Parcelas:</label>
         <select id="parcelas">
-            <option value="1">1x</option>
-            <option value="2">2x</option>
-            <option value="3">3x</option>
-            <option value="4">4x</option>
-            <option value="5">5x</option>
-            <option value="6">6x</option>
-            <option value="7">7x</option>
-            <option value="8">8x</option>
-            <option value="9">9x</option>
-            <option value="10">10x</option>
-            <option value="11">11x</option>
-            <option value="12">12x</option>
-            <option value="13">13x</option>
-            <option value="14">14x</option>
-            <option value="15">15x</option>
-            <option value="16">16x</option>
-            <option value="17">17x</option>
-            <option value="18">18x</option>
-            <option value="19">19x</option>
-            <option value="20">20x</option>
-            <option value="21">21x</option>
+            <!-- As opções serão preenchidas dinamicamente -->
         </select>
 
         <label for="forma-pagamento">Forma de Pagamento:</label>
-        <select id="forma-pagamento">
+        <select id="forma-pagamento" onchange="atualizarParcelas()">
             <option value="credito">Cartão de Crédito</option>
             <option value="boleto">Boleto</option>
             <option value="recorrente">Pagamento Recorrente</option>
@@ -127,12 +143,78 @@
         </div>
     </div>
 
+
+    
     <script>
+        const pacotes = {
+            "sao-paulo": {
+                "10699": "Pacote Platinum R$ 10.699",
+                "9799": "Pacote Turbinada R$ 9.799",
+                "9499": "Pacote Preparada R$ 9.499",
+                "8999": "Pacote Essencial R$ 8.999"
+            },
+            "rio-de-janeiro": {
+                "10699": "Pacote Platinum (R$ 10.699)",
+                "10199": "Pacote Turbinada (R$ 10.199)",
+                "9299": "Pacote Essencial (R$ 9.299)"
+            },
+            "curitiba": {
+                "10699": "Pacote Platinum (R$ 10.699)",
+                "10199": "Pacote Turbinada (R$ 10.199)",
+                "9299": "Pacote Essencial (R$ 9.299)"
+            }
+        };
+
+        function carregarPacotes() {
+            const unidadeSelect = document.getElementById('unidade');
+            const pacoteSelect = document.getElementById('pacote');
+            const unidade = unidadeSelect.value;
+            const pacotesAtualizados = pacotes[unidade];
+
+            pacoteSelect.innerHTML = ''; // Limpa as opções atuais
+
+            for (const [valor, nome] of Object.entries(pacotesAtualizados)) {
+                pacoteSelect.innerHTML += `<option value="${valor}">${nome}</option>`;
+            }
+
+            // Atualiza o valor do pacote selecionado
+            atualizarValorPacote();
+        }
+
+        function formatarMoeda(valor) {
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        function atualizarValorPacote() {
+            // Atualiza o valor do pacote para o cálculo
+            calcularParcelas();
+        }
+
+        function atualizarParcelas() {
+            const formaPagamento = document.getElementById('forma-pagamento').value;
+            const parcelasSelect = document.getElementById('parcelas');
+            parcelasSelect.innerHTML = ''; // Limpa as opções atuais
+
+            let maxParcelas = 21; // Padrão para cartão de crédito
+            if (formaPagamento === 'boleto') {
+                maxParcelas = 23; // Máximo de parcelas para boleto
+            } else if (formaPagamento === 'recorrente') {
+                maxParcelas = 24; // Máximo de parcelas para pagamento recorrente
+            }
+
+            for (let i = 1; i <= maxParcelas; i++) {
+                parcelasSelect.innerHTML += `<option value="${i}">${i}x</option>`;
+            }
+
+            // Atualiza o cálculo de parcelas baseado na nova quantidade
+            calcularParcelas();
+        }
+
         function calcularParcelas() {
-            const valorPacote = parseFloat(document.getElementById('valor-pacote').value);
-            const entrada = parseFloat(document.getElementById('entrada').value);
-            const produtosAvulsos = parseFloat(document.getElementById('produtos-avulsos').value);
-            const parcelas = parseInt(document.getElementById('parcelas').value);
+            const valorPacote = parseFloat(document.getElementById('pacote').value) || 0;
+            const entrada = parseFloat(document.getElementById('entrada').value) || 0;
+            const produtosAvulsos = parseFloat(document.getElementById('produtos-avulsos').value) || 0;
+            const parcelas = parseInt(document.getElementById('parcelas').value) || 1;
             const formaPagamento = document.getElementById('forma-pagamento').value;
 
             let taxaJuros = 0; // Inicializa a taxa de juros
@@ -153,11 +235,22 @@
             const valorParcelado = valorTotal - entrada;
             const valorParcela = valorParcelado / parcelas;
 
-            document.getElementById('valor-total').textContent = `R$ ${valorTotal.toFixed(2)}`;
-            document.getElementById('valor-parcela').textContent = `R$ ${valorParcela.toFixed(2)}`;
+            document.getElementById('valor-total').textContent = formatarMoeda(valorTotal);
+            document.getElementById('valor-parcela').textContent = formatarMoeda(valorParcela);
 
             document.getElementById('resultado').style.display = 'block';
         }
+
+        // Atualiza pacotes ao mudar a unidade
+        function atualizarPacotes() {
+            carregarPacotes();
+        }
+
+        // Inicializa as opções de pacotes e parcelas ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarPacotes();
+            atualizarParcelas();
+        });
     </script>
 
 </body>
